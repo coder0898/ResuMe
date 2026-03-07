@@ -1,10 +1,13 @@
-import { DocumentTextIcon } from "@heroicons/react/20/solid";
-import "./App.css";
+import {
+  AcademicCapIcon,
+  BriefcaseIcon,
+  CommandLineIcon,
+  DocumentTextIcon,
+  UserIcon,
+} from "@heroicons/react/20/solid";
 import { useState } from "react";
 
 function App() {
-  const [step, setStep] = useState(1);
-  const totalSteps = 4;
   const [resumeData, setResumeData] = useState({
     personalInfo: {
       fullName: "",
@@ -18,434 +21,405 @@ function App() {
     experience: [],
     skills: [],
   });
+
+  const [steps, setSteps] = useState(1);
   const [errors, setErrors] = useState({});
+  const totalSteps = 4;
 
-  const validateInput = (name, value) => {
-    let error = "";
-    if (!value.trim()) {
-      error = "This field is required";
-    } else {
-      switch (name) {
-        case "email":
-          if (!/\S+@\S+\.\S+/.test(value)) error = "Enter a valid email";
-          break;
-
-        case "phone":
-          if (!/^[0-9]{10}$/.test(value))
-            error = "Enter valid 10-digit phone number";
-          break;
-
-        case "linkedin":
-          if (!value.includes("linkedin.com"))
-            error = "Enter valid LinkedIn URL";
-          break;
-
-        case "portfolio":
-          try {
-            new URL(value);
-          } catch {
-            error = "Enter valid URL";
-          }
-          break;
-
-        default:
-          break;
-      }
-    }
-
-    return error;
-  };
-
-  const handleChange = (e) => {
-    const name = e.target.name;
-    const value = e.target.value;
-
-    setResumeData((prev) => ({
-      ...prev,
-      personalInfo: { ...prev.personalInfo, [name]: value },
-    }));
-
-    const error = validateInput(name, value);
-    setErrors((prev) => ({ ...prev, [name]: error }));
-  };
-
-  //handle next and prev
+  // STEP CONTROL
   const handleNext = () => {
-    // Validate ONLY first step
-    // if (step === 1) {
-    //   const isValid = validateStepOne();
-    //   if (!isValid) return;
-    // }
-
-    if (step < totalSteps) {
-      setStep((prev) => prev + 1);
+    if (steps < totalSteps) {
+      setSteps((prev) => prev + 1);
     }
   };
 
   const handlePrev = () => {
-    if (step > 1) setStep((prev) => prev - 1);
+    if (steps > 1) {
+      setSteps((prev) => prev - 1);
+    }
   };
 
   return (
-    <>
-      <div className="h-screen bg-gray-100">
-        <main className="p-6">
-          <div className="bg-white p-4 rounded shadow-md ">
-            <div className="flex items-center gap-2 mb-6">
-              <DocumentTextIcon className="h-8 w-8 text-blue-500" />
-              <h2 className="text-blue-500 font-semibold text-2xl">
-                Resume Form
-              </h2>
-            </div>
-            {/* Step Indicator */}
-            <p className="text-sm text-gray-500 mb-6">
-              Step {step} of {totalSteps}
-            </p>
+    <div className="min-h-screen bg-gray-100">
+      <main className="p-6">
+        <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100 max-w-6xl mx-auto">
+          {/* HEADER */}
+          <div className="flex items-center gap-2 mb-6">
+            <DocumentTextIcon className="h-8 w-8 text-blue-500" />
+            <h2 className="text-blue-500 font-semibold text-2xl">
+              Resume Builder Form
+            </h2>
+          </div>
+          {/* PROGRESS BAR */}
+          {/* <div className="mb-8">
+            <div className="flex items-center justify-between">
+              {["Personal", "Education", "Experience", "Skills"].map(
+                (label, index) => {
+                  const stepNumber = index + 1;
 
-            {/* Form */}
-            {/* ================= DYNAMIC STEP HEADING ================= */}
-            {step === 1 && (
+                  return (
+                    <div
+                      key={label}
+                      className="flex-1 flex flex-col items-center relative"
+                    >
+                      <div
+                        className={`h-10 w-10 flex items-center justify-center rounded-full font-semibold transition
+                        ${
+                          steps >= stepNumber
+                            ? "bg-blue-500 text-white"
+                            : "bg-gray-200 text-gray-600"
+                        }`}
+                      >
+                        {stepNumber}
+                      </div>
+
+                      <span className="text-xs mt-2 text-gray-600">
+                        {label}
+                      </span>
+
+                      {stepNumber !== totalSteps && (
+                        <div className="h-1 w-full bg-gray-200 mt-3">
+                          <div
+                            className={`h-1 ${
+                              steps > stepNumber ? "bg-blue-600 w-full" : "w-0"
+                            }`}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  );
+                },
+              )}
+            </div>
+          </div> */}
+          <div className="mb-10 relative">
+            {/* Background Line */}
+            <div className="absolute top-5 left-0 w-full h-[2px] bg-gray-200"></div>
+
+            {/* Active Line */}
+            <div
+              className="absolute top-5 left-0 h-[2px] bg-blue-500 transition-all duration-300"
+              style={{ width: `${((steps - 1) / (totalSteps - 1)) * 100}%` }}
+            ></div>
+
+            {/* Steps */}
+            <div className="flex justify-between relative">
+              {["Personal", "Education", "Experience", "Skills"].map(
+                (label, index) => {
+                  const stepNumber = index + 1;
+
+                  return (
+                    <div key={label} className="flex flex-col items-center">
+                      <div
+                        className={`h-10 w-10 flex items-center justify-center rounded-full font-semibold z-10
+              ${
+                steps >= stepNumber
+                  ? "bg-blue-500 text-white"
+                  : "bg-gray-200 text-gray-600"
+              }`}
+                      >
+                        {stepNumber}
+                      </div>
+
+                      <span className="text-xs mt-2 text-gray-600">
+                        {label}
+                      </span>
+                    </div>
+                  );
+                },
+              )}
+            </div>
+          </div>
+
+          {/* =========== Dynamic Step Heading ============= */}
+
+          {steps === 1 && (
+            <div className="flex items-center gap-3 mb-6 border-b pb-3">
+              <UserIcon className="h-8 w-8" />
               <h3 className="text-lg font-semibold mb-4">
                 Personal Information
               </h3>
-            )}
+            </div>
+          )}
 
-            {step === 2 && (
+          {steps === 2 && (
+            <div className="flex items-center gap-3 mb-6 border-b pb-3">
+              <AcademicCapIcon className="h-8 w-8" />
               <h3 className="text-lg font-semibold mb-4">Education</h3>
-            )}
+            </div>
+          )}
 
-            {step === 3 && (
+          {steps === 3 && (
+            <div className="flex items-center gap-3 mb-6 border-b pb-3">
+              <BriefcaseIcon className="h-8 w-8" />
               <h3 className="text-lg font-semibold mb-4">Experience</h3>
-            )}
+            </div>
+          )}
 
-            {step === 4 && (
+          {steps === 4 && (
+            <div className="flex items-center gap-3 mb-6 border-b pb-3">
+              <CommandLineIcon className="h-8 w-8" />
               <h3 className="text-lg font-semibold mb-4">
                 Skills (Technical & Soft)
               </h3>
+            </div>
+          )}
+
+          <form className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* STEP 1 */}
+            {steps === 1 && (
+              <>
+                <div className="space-y-5">
+                  {/* Full Name */}
+                  <div className="flex flex-col gap-2">
+                    <label className="text-sm font-medium text-gray-700">
+                      Full Name <sup className="text-red-500">*</sup>
+                    </label>
+                    <input
+                      type="text"
+                      name="fullName"
+                      value={resumeData.personalInfo.fullName}
+                      className="w-full rounded-lg border border-gray-300 px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="Full Name"
+                    />
+                  </div>
+
+                  {/* Email */}
+                  <div className="flex flex-col gap-2">
+                    <label className="text-sm font-medium text-gray-700">
+                      Email <sup className="text-red-500">*</sup>
+                    </label>
+                    <input
+                      type="email"
+                      name="email"
+                      value={resumeData.personalInfo.email}
+                      className="w-full rounded-lg border border-gray-300 px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="Email Id"
+                    />
+                  </div>
+
+                  {/* Phone */}
+                  <div className="flex flex-col gap-2">
+                    <label className="text-sm font-medium text-gray-700">
+                      Phone <sup className="text-red-500">*</sup>
+                    </label>
+                    <input
+                      type="tel"
+                      name="phone"
+                      value={resumeData.personalInfo.phone}
+                      className="w-full rounded-lg border border-gray-300 px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="Phone Number"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-5">
+                  {/* Linkedin */}
+                  <div className="flex flex-col gap-2">
+                    <label className="text-sm font-medium text-gray-700">
+                      LinkedIn
+                    </label>
+                    <input
+                      type="url"
+                      name="linkedin"
+                      value={resumeData.personalInfo.linkedin}
+                      className="w-full rounded-lg border border-gray-300 px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="LinkedIn Profile"
+                    />
+                  </div>
+
+                  {/* Portfolio */}
+                  <div className="flex flex-col gap-2">
+                    <label className="text-sm font-medium text-gray-700">
+                      Portfolio
+                    </label>
+                    <input
+                      type="url"
+                      name="portfolio"
+                      value={resumeData.personalInfo.portfolio}
+                      className="w-full rounded-lg border border-gray-300 px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="Github / Website"
+                    />
+                  </div>
+
+                  {/* Location */}
+                  <div className="flex flex-col gap-2">
+                    <label className="text-sm font-medium text-gray-700">
+                      Location
+                    </label>
+                    <input
+                      type="text"
+                      name="location"
+                      value={resumeData.personalInfo.location}
+                      className="w-full rounded-lg border border-gray-300 px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="City, Country"
+                    />
+                  </div>
+                </div>
+              </>
             )}
-            <form className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* ================= STEP 1 ================= */}
-              {step === 1 && (
-                <>
-                  <div className="space-y-5">
-                    <div className="flex flex-col gap-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Full Name <sup className="text-red-500">*</sup>
-                      </label>
-                      <input
-                        type="text"
-                        name="fullName"
-                        value={resumeData.personalInfo.fullName}
-                        onChange={handleChange}
-                        className={`w-full rounded-lg border px-3 py-2 outline-none transition focus:ring-2 ${
-                          errors.fullName
-                            ? "border-red-500 focus:ring-red-500"
-                            : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"
-                        }`}
-                        placeholder="Full Name"
-                      />
-                      {errors.fullName && (
-                        <p className="text-red-500 text-sm">
-                          {errors.fullName}
-                        </p>
-                      )}
-                    </div>
-                    <div className="flex flex-col gap-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Email <sup className="text-red-500">*</sup>
-                      </label>
-                      <input
-                        type="email"
-                        name="email"
-                        value={resumeData.personalInfo.email}
-                        onChange={handleChange}
-                        className={`w-full rounded-lg border px-3 py-2 outline-none transition focus:ring-2 ${
-                          errors.email
-                            ? "border-red-500 focus:ring-red-500"
-                            : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"
-                        }`}
-                        placeholder="Email Id"
-                      />
-                      {errors.email && (
-                        <p className="text-red-500 text-sm">{errors.email}</p>
-                      )}
-                    </div>
-                    <div className="flex flex-col gap-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Phone <sup className="text-red-500">*</sup>
-                      </label>
-                      <input
-                        type="tel"
-                        name="phone"
-                        value={resumeData.personalInfo.phone}
-                        onChange={handleChange}
-                        className={`w-full rounded-lg border px-3 py-2 outline-none transition focus:ring-2 ${
-                          errors.phone
-                            ? "border-red-500 focus:ring-red-500"
-                            : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"
-                        }`}
-                        placeholder="Phone Number"
-                      />
-                      {errors.phone && (
-                        <p className="text-red-500 text-sm">{errors.phone}</p>
-                      )}
-                    </div>
-                  </div>
-                  <div className="space-y-5">
-                    <div className="flex flex-col gap-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        LinkedIn <sup className="text-red-500">*</sup>
-                      </label>
-                      <input
-                        type="url"
-                        name="linkedin"
-                        value={resumeData.personalInfo.linkedin}
-                        onChange={handleChange}
-                        className={`w-full rounded-lg border px-3 py-2 outline-none transition focus:ring-2 ${
-                          errors.linkedin
-                            ? "border-red-500 focus:ring-red-500"
-                            : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"
-                        }`}
-                        placeholder="LinkedIn Profile"
-                      />
-                      {errors.linkedin && (
-                        <p className="text-red-500 text-sm">
-                          {errors.linkedin}
-                        </p>
-                      )}
-                    </div>
-                    <div className="flex flex-col gap-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Protfolio <sup className="text-red-500">*</sup>
-                      </label>
-                      <input
-                        type="url"
-                        name="portfolio"
-                        value={resumeData.personalInfo.portfolio}
-                        onChange={handleChange}
-                        className={`w-full rounded-lg border px-3 py-2 outline-none transition focus:ring-2 ${
-                          errors.portfolio
-                            ? "border-red-500 focus:ring-red-500"
-                            : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"
-                        }`}
-                        placeholder="portfolio - Github, personal website"
-                      />
-                      {errors.portfolio && (
-                        <p className="text-red-500 text-sm">
-                          {errors.portfolio}
-                        </p>
-                      )}
-                    </div>
-                    <div className="flex flex-col gap-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Location <sup className="text-red-500">*</sup>
-                      </label>
-                      <input
-                        type="text"
-                        name="location"
-                        value={resumeData.personalInfo.location}
-                        onChange={handleChange}
-                        className={`w-full rounded-lg border px-3 py-2 outline-none transition focus:ring-2 ${
-                          errors.location
-                            ? "border-red-500 focus:ring-red-500"
-                            : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"
-                        }`}
-                        placeholder="Location - City, Country"
-                      />
-                      {errors.location && (
-                        <p className="text-red-500 text-sm">
-                          {errors.location}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </>
-              )}
-              {/* ================= STEP 2 ================= */}
-              {step === 2 && (
-                <>
-                  <div className="space-y-5">
-                    <div className="flex flex-col gap-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Institute/Board Name
-                        <sup className="text-red-500">*</sup>
-                      </label>
-                      <input
-                        type="text"
-                        name="instituteName"
-                        className={`w-full rounded-lg border px-3 py-2 outline-none transition focus:ring-2 ${
-                          errors.instituteName
-                            ? "border-red-500 focus:ring-red-500"
-                            : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"
-                        }`}
-                        placeholder="Full Name"
-                      />
-                      {errors.instituteName && (
-                        <p className="text-red-500 text-sm">
-                          {errors.instituteName}
-                        </p>
-                      )}
-                    </div>
-                    <div className="flex flex-col gap-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Degree/Class <sup className="text-red-500">*</sup>
-                      </label>
-                      <input
-                        type="text"
-                        name="degreeName"
-                        className={`w-full rounded-lg border px-3 py-2 outline-none transition focus:ring-2 ${
-                          errors.degreeName
-                            ? "border-red-500 focus:ring-red-500"
-                            : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"
-                        }`}
-                        placeholder="Full Name"
-                      />
-                      {errors.degreeName && (
-                        <p className="text-red-500 text-sm">
-                          {errors.degreeName}
-                        </p>
-                      )}
-                    </div>
-                    <div className="flex flex-col gap-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Field of Study <sup className="text-red-500">*</sup>
-                      </label>
-                      <input
-                        type="text"
-                        name="fieldOfStudy"
-                        className={`w-full rounded-lg border px-3 py-2 outline-none transition focus:ring-2 ${
-                          errors.fieldOfStudy
-                            ? "border-red-500 focus:ring-red-500"
-                            : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"
-                        }`}
-                        placeholder="Full Name"
-                      />
-                      {errors.fieldOfStudy && (
-                        <p className="text-red-500 text-sm">
-                          {errors.fieldOfStudy}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                  <div className="space-y-5">
-                    <div className="flex flex-col gap-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Status <sup className="text-red-500">*</sup>
-                      </label>
-                      <select
-                        name="status"
-                        className={`w-full rounded-lg border px-3 py-2 outline-none transition focus:ring-2 ${
-                          errors.startDate
-                            ? "border-red-500 focus:ring-red-500"
-                            : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"
-                        }`}
-                      >
-                        <option value="">Select Status</option>
-                        <option value="Passed">Passed</option>
-                        <option value="lastSemister">Last Semister</option>
-                      </select>
-                      {errors.status && (
-                        <p className="text-red-500 text-sm">{errors.status}</p>
-                      )}
-                    </div>
-                    <div className="flex flex-col gap-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Start Date <sup className="text-red-500">*</sup>
-                      </label>
-                      <input
-                        type="date"
-                        name="startDate"
-                        className={`w-full rounded-lg border px-3 py-2 outline-none transition focus:ring-2 ${
-                          errors.startDate
-                            ? "border-red-500 focus:ring-red-500"
-                            : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"
-                        }`}
-                        placeholder="Full Name"
-                      />
-                      {errors.startDate && (
-                        <p className="text-red-500 text-sm">
-                          {errors.startDate}
-                        </p>
-                      )}
-                    </div>
-                    <div className="flex flex-col gap-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        End Date <sup className="text-red-500">*</sup>
-                      </label>
-                      <input
-                        type="date"
-                        name="endDate"
-                        className={`w-full rounded-lg border px-3 py-2 outline-none transition focus:ring-2 ${
-                          errors.endDate
-                            ? "border-red-500 focus:ring-red-500"
-                            : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"
-                        }`}
-                        placeholder="Full Name"
-                      />
-                      {errors.endDate && (
-                        <p className="text-red-500 text-sm">{errors.endDate}</p>
-                      )}
-                    </div>
-                  </div>
-                  <div className="md:col-span-2 flex justify-end gap-4 pt-4">
-                    <button
-                      type="button"
-                      className="text-white px-5 py-2.5 rounded-lg font-medium transition bg-green-600 hover:bg-green-700"
-                    >
-                      Save Button
-                    </button>
-                  </div>
-                </>
+
+            {/* STEP 2 EDUCATION */}
+            {steps === 2 && (
+              <div className="md:col-span-2">
+                <table className="min-w-full text-sm text-left">
+                  <thead className="bg-gray-50 text-gray-700 uppercase text-xs">
+                    <tr>
+                      <th className="px-4 py-3">Institute</th>
+                      <th className="px-4 py-3">Degree</th>
+                      <th className="px-4 py-3">Field</th>
+                      <th className="px-4 py-3">Status</th>
+                      <th className="px-4 py-3">Start</th>
+                      <th className="px-4 py-3">End</th>
+                      <th className="px-4 py-3 text-center">Action</th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    <tr className="border-t">
+                      <td className="px-4 py-3">
+                        <input className="border px-3 py-2 rounded-md w-full" />
+                      </td>
+                      <td className="px-4 py-3">
+                        <input className="border px-3 py-2 rounded-md w-full" />
+                      </td>
+                      <td className="px-4 py-3">
+                        <input className="border px-3 py-2 rounded-md w-full" />
+                      </td>
+                      <td className="px-4 py-3">
+                        <select className="border px-3 py-2 rounded-md w-full">
+                          <option>Select</option>
+                        </select>
+                      </td>
+                      <td className="px-4 py-3">
+                        <input
+                          type="date"
+                          className="border px-2 py-2 rounded-md"
+                        />
+                      </td>
+                      <td className="px-4 py-3">
+                        <input
+                          type="date"
+                          className="border px-2 py-2 rounded-md"
+                        />
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        <button className="bg-green-600 text-white px-4 py-2 rounded-md">
+                          Save
+                        </button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            )}
+            {steps === 3 && (
+              <div className="md:col-span-2">
+                <table className="min-w-full text-sm text-left">
+                  <thead className="bg-gray-50 text-gray-700 uppercase text-xs">
+                    <tr>
+                      <th className="px-4 py-3">Company</th>
+                      <th className="px-4 py-3">Role</th>
+                      <th className="px-4 py-3">Location</th>
+                      <th className="px-4 py-3">Start</th>
+                      <th className="px-4 py-3">End</th>
+                      <th className="px-4 py-3 text-center">Action</th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    <tr className="border-t">
+                      <td className="px-4 py-3">
+                        <input
+                          type="text"
+                          placeholder="Company"
+                          className="border px-3 py-2 rounded-md w-full"
+                        />
+                      </td>
+
+                      <td className="px-4 py-3">
+                        <input
+                          type="text"
+                          placeholder="Role"
+                          className="border px-3 py-2 rounded-md w-full"
+                        />
+                      </td>
+
+                      <td className="px-4 py-3">
+                        <input
+                          type="text"
+                          placeholder="Location"
+                          className="border px-3 py-2 rounded-md w-full"
+                        />
+                      </td>
+
+                      <td className="px-4 py-3">
+                        <input
+                          type="date"
+                          className="border px-2 py-2 rounded-md"
+                        />
+                      </td>
+
+                      <td className="px-4 py-3">
+                        <input
+                          type="date"
+                          className="border px-2 py-2 rounded-md"
+                        />
+                      </td>
+
+                      <td className="px-4 py-3 text-center">
+                        <button className="bg-green-600 text-white px-4 py-2 rounded-md">
+                          Save
+                        </button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            )}
+            {/* STEP 4 SKILLS */}
+            {steps === 4 && (
+              <div className="md:col-span-2">
+                <input
+                  placeholder="Please state your skills"
+                  className="w-full rounded-md border border-gray-300 px-3 py-2"
+                />
+              </div>
+            )}
+
+            {/* BUTTONS */}
+            <div className="md:col-span-2 flex justify-end gap-4 pt-4">
+              {steps > 1 && (
+                <button
+                  type="button"
+                  onClick={handlePrev}
+                  className="text-white px-5 py-2.5 rounded-lg bg-gray-600 hover:bg-gray-700"
+                >
+                  Prev
+                </button>
               )}
 
-              {/* ================= STEP 3 ================= */}
-              {step === 3 && (
-                <div className="md:col-span-2">
-                  <p className="text-gray-500">
-                    You will add dynamic experience fields here.
-                  </p>
-                </div>
+              {steps === totalSteps ? (
+                <button
+                  type="button"
+                  className="text-white px-5 py-2.5 rounded-lg bg-green-600 hover:bg-green-700"
+                >
+                  Submit
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleNext}
+                  className="text-white px-5 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700"
+                >
+                  Next
+                </button>
               )}
-              {step === 4 && (
-                <div className="md:col-span-2">
-                  <p className="text-gray-500">
-                    You will add dynamic skill fields here.
-                  </p>
-                </div>
-              )}
-              {/* ================= BUTTONS ================= */}
-              <div className="md:col-span-2 flex justify-end gap-4 pt-4">
-                {step > 1 && (
-                  <button
-                    type="button"
-                    onClick={handlePrev}
-                    className="text-white px-5 py-2.5 rounded-lg font-medium transition bg-gray-600 hover:bg-gray-700"
-                  >
-                    Prev
-                  </button>
-                )}
-                {step === totalSteps ? (
-                  <button
-                    type="button"
-                    className="text-white px-5 py-2.5 rounded-lg font-medium transition bg-green-600 hover:bg-green-700"
-                  >
-                    Submit
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={handleNext}
-                    className="text-white px-5 py-2.5 rounded-lg font-medium transition bg-blue-600 hover:bg-blue-700"
-                  >
-                    Next
-                  </button>
-                )}
-              </div>
-            </form>
-          </div>
-        </main>
-      </div>
-    </>
+            </div>
+          </form>
+        </div>
+      </main>
+    </div>
   );
 }
 
