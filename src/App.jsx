@@ -6,6 +6,12 @@ import {
   UserIcon,
 } from "@heroicons/react/20/solid";
 import { useState } from "react";
+import InputField from "./components/common/InputField";
+import SelectField from "./components/common/SelectField";
+import ProgressBar from "./components/layout/ProgressBar";
+import StepNavigation from "./components/layout/StepNavigation";
+import FormHead from "./components/layout/FormHead";
+import PersonalInfo from "./components/form/PersonalInfo";
 
 function App() {
   const [resumeData, setResumeData] = useState({
@@ -71,7 +77,6 @@ function App() {
         [name]: value,
       },
     }));
-    console.log(resumeData.personalInfo);
   };
 
   const handleArrayChange = (section, e) => {
@@ -81,7 +86,7 @@ function App() {
         ...prev,
         [name]: value,
       }));
-      console.log(educationData);
+      // console.log(educationData);
     }
 
     if (section.toLowerCase() === "experience") {
@@ -89,7 +94,7 @@ function App() {
         ...prev,
         [name]: value,
       }));
-      console.log(experience);
+      // console.log(experience);
     }
   };
 
@@ -99,7 +104,7 @@ function App() {
     if (section === "education") {
       setResumeData((prev) => ({
         ...prev,
-        education: [...prev.education, educationData], // append new education
+        education: [...prev.education, { ...educationData, id: Date.now() }], // append new education
       }));
 
       setEducationData({
@@ -116,7 +121,7 @@ function App() {
     if (section === "experience") {
       setResumeData((prev) => ({
         ...prev,
-        experience: [...prev.experience, experience], // append new experience
+        experience: [...prev.experience, { ...experience, id: Date.now() }], // append new experience
       }));
 
       setExperience({
@@ -169,6 +174,71 @@ function App() {
     }));
   };
 
+  // validation
+  const validatePersonalInfo = () => {
+    const { fullName, email, phone, location } = resumeData.personalInfo;
+    return (
+      fullName.trim() !== "" &&
+      email.trim() !== "" &&
+      phone.trim() !== "" &&
+      location.trim() !== ""
+    );
+  };
+
+  const isEducationValid = () => {
+    const {
+      instituteName,
+      degreeName,
+      fieldOfStudy,
+      status,
+      startDate,
+      endDate,
+    } = educationData;
+
+    return (
+      instituteName &&
+      degreeName &&
+      fieldOfStudy &&
+      status &&
+      startDate &&
+      endDate
+    );
+  };
+
+  const isExperienceValid = () => {
+    const { comapnyName, role, type, status, startDate, location, endDate } =
+      experience;
+
+    return (
+      comapnyName && role && type && status && startDate && location && endDate
+    );
+  };
+
+  const isStepValid = () => {
+    if (steps === 1) return validatePersonalInfo();
+    if (steps === 2) return resumeData.education.length > 0;
+    if (steps === 3) return resumeData.experience.length > 0;
+    if (steps === 4) return resumeData.skills.length > 0;
+    return true;
+  };
+
+  // submit the form
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    localStorage.setItem("resumeData", JSON.stringify(resumeData));
+    alert("Resume saved successfully!");
+  };
+
+  // Function for steps based form heading
+  const stepConfig = {
+    1: { title: "Personal Information", Icon: UserIcon },
+    2: { title: "Education", Icon: AcademicCapIcon },
+    3: { title: "Experience", Icon: BriefcaseIcon },
+    4: { title: "Skills (Technical & Soft)", Icon: CommandLineIcon },
+  };
+
+  const currentStep = stepConfig[steps];
+
   return (
     <div className="min-h-screen bg-gray-100">
       <main className="p-6">
@@ -181,177 +251,19 @@ function App() {
             </h2>
           </div>
           {/* PROGRESS BAR */}
-          <div className="mb-10 relative">
-            {/* Background Line */}
-            <div className="absolute top-5 left-0 w-full h-[2px] bg-gray-200"></div>
-
-            {/* Active Line */}
-            <div
-              className="absolute top-5 left-0 h-[2px] bg-blue-500 transition-all duration-300"
-              style={{ width: `${((steps - 1) / (totalSteps - 1)) * 100}%` }}
-            ></div>
-
-            {/* Steps */}
-            <div className="flex justify-between relative">
-              {["Personal", "Education", "Experience", "Skills"].map(
-                (label, index) => {
-                  const stepNumber = index + 1;
-
-                  return (
-                    <div key={label} className="flex flex-col items-center">
-                      <div
-                        className={`h-10 w-10 flex items-center justify-center rounded-full font-semibold z-10
-              ${
-                steps >= stepNumber
-                  ? "bg-blue-500 text-white"
-                  : "bg-gray-200 text-gray-600"
-              }`}
-                      >
-                        {stepNumber}
-                      </div>
-
-                      <span className="text-xs mt-2 text-gray-600">
-                        {label}
-                      </span>
-                    </div>
-                  );
-                },
-              )}
-            </div>
-          </div>
+          <ProgressBar step={steps} totalSteps={totalSteps} />
 
           {/* =========== Dynamic Step Heading ============= */}
 
-          {steps === 1 && (
-            <div className="flex items-center gap-3 mb-6 border-b pb-3">
-              <UserIcon className="h-8 w-8" />
-              <h3 className="text-lg font-semibold mb-4">
-                Personal Information
-              </h3>
-            </div>
-          )}
-
-          {steps === 2 && (
-            <div className="flex items-center gap-3 mb-6 border-b pb-3">
-              <AcademicCapIcon className="h-8 w-8" />
-              <h3 className="text-lg font-semibold mb-4">Education</h3>
-            </div>
-          )}
-
-          {steps === 3 && (
-            <div className="flex items-center gap-3 mb-6 border-b pb-3">
-              <BriefcaseIcon className="h-8 w-8" />
-              <h3 className="text-lg font-semibold mb-4">Experience</h3>
-            </div>
-          )}
-
-          {steps === 4 && (
-            <div className="flex items-center gap-3 mb-6 border-b pb-3">
-              <CommandLineIcon className="h-8 w-8" />
-              <h3 className="text-lg font-semibold mb-4">
-                Skills (Technical & Soft)
-              </h3>
-            </div>
-          )}
+          <FormHead Icon={currentStep.Icon} title={currentStep.title} />
 
           <form className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* STEP 1 */}
             {steps === 1 && (
-              <>
-                <div className="space-y-5">
-                  {/* Full Name */}
-                  <div className="flex flex-col gap-2">
-                    <label className="text-sm font-medium text-gray-700">
-                      Full Name <sup className="text-red-500">*</sup>
-                    </label>
-                    <input
-                      type="text"
-                      name="fullName"
-                      value={resumeData.personalInfo.fullName}
-                      onChange={handleInputChange("personalInfo")}
-                      className="w-full rounded-lg border border-gray-300 px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="Full Name"
-                    />
-                  </div>
-
-                  {/* Email */}
-                  <div className="flex flex-col gap-2">
-                    <label className="text-sm font-medium text-gray-700">
-                      Email <sup className="text-red-500">*</sup>
-                    </label>
-                    <input
-                      type="email"
-                      name="email"
-                      value={resumeData.personalInfo.email}
-                      onChange={handleInputChange("personalInfo")}
-                      className="w-full rounded-lg border border-gray-300 px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="Email Id"
-                    />
-                  </div>
-
-                  {/* Phone */}
-                  <div className="flex flex-col gap-2">
-                    <label className="text-sm font-medium text-gray-700">
-                      Phone <sup className="text-red-500">*</sup>
-                    </label>
-                    <input
-                      type="tel"
-                      name="phone"
-                      value={resumeData.personalInfo.phone}
-                      onChange={handleInputChange("personalInfo")}
-                      className="w-full rounded-lg border border-gray-300 px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="Phone Number"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-5">
-                  {/* Linkedin */}
-                  <div className="flex flex-col gap-2">
-                    <label className="text-sm font-medium text-gray-700">
-                      LinkedIn
-                    </label>
-                    <input
-                      type="url"
-                      name="linkedin"
-                      value={resumeData.personalInfo.linkedin}
-                      onChange={handleInputChange("personalInfo")}
-                      className="w-full rounded-lg border border-gray-300 px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="LinkedIn Profile"
-                    />
-                  </div>
-
-                  {/* Portfolio */}
-                  <div className="flex flex-col gap-2">
-                    <label className="text-sm font-medium text-gray-700">
-                      Portfolio
-                    </label>
-                    <input
-                      type="url"
-                      name="portfolio"
-                      value={resumeData.personalInfo.portfolio}
-                      onChange={handleInputChange("personalInfo")}
-                      className="w-full rounded-lg border border-gray-300 px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="Github / Website"
-                    />
-                  </div>
-
-                  {/* Location */}
-                  <div className="flex flex-col gap-2">
-                    <label className="text-sm font-medium text-gray-700">
-                      Location
-                    </label>
-                    <input
-                      type="text"
-                      name="location"
-                      value={resumeData.personalInfo.location}
-                      onChange={handleInputChange("personalInfo")}
-                      className="w-full rounded-lg border border-gray-300 px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="City, Country"
-                    />
-                  </div>
-                </div>
-              </>
+              <PersonalInfo
+                resumeData={resumeData}
+                handleInputChange={handleInputChange}
+              />
             )}
 
             {/* STEP 2 EDUCATION */}
@@ -373,69 +285,63 @@ function App() {
                   <tbody>
                     <tr className="border-t">
                       <td className="px-4 py-3">
-                        <input
-                          type="text"
+                        <InputField
                           name="instituteName"
                           value={educationData.instituteName}
                           onChange={(e) => handleArrayChange("education", e)}
                           placeholder="Institute Name"
-                          className="border px-3 py-2 rounded-md w-full"
                         />
                       </td>
                       <td className="px-4 py-3">
-                        <input
-                          type="text"
+                        <InputField
                           name="degreeName"
                           value={educationData.degreeName}
                           onChange={(e) => handleArrayChange("education", e)}
                           placeholder="Degree Name"
-                          className="border px-3 py-2 rounded-md w-full"
                         />
                       </td>
                       <td className="px-4 py-3">
-                        <input
-                          type="text"
+                        <InputField
                           name="fieldOfStudy"
                           value={educationData.fieldOfStudy}
                           onChange={(e) => handleArrayChange("education", e)}
-                          placeholder="field"
-                          className="border px-3 py-2 rounded-md w-full"
+                          placeholder="Field/Major"
                         />
                       </td>
                       <td className="px-4 py-3">
-                        <select
+                        <SelectField
                           name="status"
                           value={educationData.status}
                           onChange={(e) => handleArrayChange("education", e)}
-                          className="border px-3 py-2 rounded-md w-full"
-                        >
-                          <option value="">Select</option>
-                          <option value="Passed">Passed</option>
-                          <option value="Studying">Studying</option>
-                        </select>
-                      </td>
-                      <td className="px-4 py-3">
-                        <input
-                          type="date"
-                          name="startDate"
-                          value={educationData.startDate}
-                          onChange={(e) => handleArrayChange("education", e)}
-                          className="border px-2 py-2 rounded-md"
+                          options={[
+                            { value: "", label: "Select" },
+                            { value: "Passed", label: "Passed" },
+                            { value: "Studying", label: "Studying" },
+                          ]}
                         />
                       </td>
                       <td className="px-4 py-3">
-                        <input
+                        <InputField
+                          name="startDate"
+                          value={educationData.startDate}
+                          onChange={(e) => handleArrayChange("education", e)}
                           type="date"
+                        />
+                      </td>
+                      <td className="px-4 py-3">
+                        <InputField
                           name="endDate"
                           value={educationData.endDate}
                           onChange={(e) => handleArrayChange("education", e)}
-                          className="border px-2 py-2 rounded-md"
+                          type="date"
                         />
                       </td>
                       <td className="px-4 py-3 text-center">
                         <button
                           onClick={(e) => saveArrayRow("education", e)}
-                          className="bg-green-600 text-white px-4 py-2 rounded-md"
+                          disabled={!isEducationValid()}
+                          className={`px-4 py-2 rounded-md text-white
+                          ${!isEducationValid() ? "bg-gray-400 cursor-not-allowed" : "bg-green-600"}`}
                         >
                           Save
                         </button>
@@ -509,6 +415,8 @@ function App() {
                       <th className="px-4 py-3">Company</th>
                       <th className="px-4 py-3">Role</th>
                       <th className="px-4 py-3">Location</th>
+                      <th className="px-4 py-3">Type</th>
+                      <th className="px-4 py-3">Status</th>
                       <th className="px-4 py-3">Start</th>
                       <th className="px-4 py-3">End</th>
                       <th className="px-4 py-3 text-center">Action</th>
@@ -518,83 +426,78 @@ function App() {
                   <tbody>
                     <tr className="border-t">
                       <td className="px-4 py-3">
-                        <input
-                          type="text"
+                        <InputField
                           name="comapnyName"
-                          value={experience.comapnyName}
+                          value={experience.comapnyName || ""}
                           onChange={(e) => handleArrayChange("experience", e)}
                           placeholder="Company"
-                          className="border px-3 py-2 rounded-md w-full"
                         />
                       </td>
 
                       <td className="px-4 py-3">
-                        <input
-                          type="text"
+                        <InputField
                           name="role"
-                          value={experience.role}
+                          value={experience.role || ""}
                           onChange={(e) => handleArrayChange("experience", e)}
                           placeholder="Role"
-                          className="border px-3 py-2 rounded-md w-full"
                         />
                       </td>
 
                       <td className="px-4 py-3">
-                        <input
-                          type="text"
+                        <InputField
                           name="location"
-                          value={experience.location}
+                          value={experience.location || ""}
                           onChange={(e) => handleArrayChange("experience", e)}
                           placeholder="Location"
-                          className="border px-3 py-2 rounded-md w-full"
                         />
                       </td>
 
                       <td className="px-4 py-3">
-                        <select
+                        <SelectField
                           name="type"
                           value={experience.type}
                           onChange={(e) => handleArrayChange("experience", e)}
-                          className="border px-3 py-2 rounded-md w-full"
-                        >
-                          <option value="">Select Type</option>
-                          <option value="Full Time">Full Time</option>
-                          <option value="Internship">Internship</option>
-                          <option value="Part Time">Part Time</option>
-                          <option value="Freelance">Freelance</option>
-                        </select>
-                      </td>
-
-                      <td className="px-4 py-3">
-                        <select
-                          name="status"
-                          value={experience.status}
-                          onChange={(e) => handleArrayChange("experience", e)}
-                          className="border px-3 py-2 rounded-md w-full"
-                        >
-                          <option value="">Select Status</option>
-                          <option value="Working">Working</option>
-                          <option value="Serving Notice">Serving Notice</option>
-                        </select>
-                      </td>
-
-                      <td className="px-4 py-3">
-                        <input
-                          type="date"
-                          name="startDate"
-                          value={experience.startDate}
-                          onChange={(e) => handleArrayChange("experience", e)}
-                          className="border px-2 py-2 rounded-md"
+                          options={[
+                            { value: "", label: "Select" },
+                            { value: "Full Time", label: "Full Time" },
+                            { value: "Internship", label: "Internship" },
+                            { value: "Part Time", label: "Part Time" },
+                            { value: "Freelance", label: "Freelance" },
+                          ]}
                         />
                       </td>
 
                       <td className="px-4 py-3">
-                        <input
+                        <SelectField
+                          name="status"
+                          value={experience.status}
+                          onChange={(e) => handleArrayChange("experience", e)}
+                          options={[
+                            { value: "", label: "Select" },
+                            { value: "Working", label: "Working" },
+                            {
+                              value: "Serving Notice",
+                              label: "Serving Notice",
+                            },
+                          ]}
+                        />
+                      </td>
+
+                      <td className="px-4 py-3">
+                        <InputField
+                          type="date"
+                          name="startDate"
+                          value={experience.startDate || ""}
+                          onChange={(e) => handleArrayChange("experience", e)}
+                        />
+                      </td>
+
+                      <td className="px-4 py-3">
+                        <InputField
                           type="date"
                           name="endDate"
-                          value={experience.endDate}
+                          value={experience.endDate || ""}
                           onChange={(e) => handleArrayChange("experience", e)}
-                          className="border px-2 py-2 rounded-md"
                         />
                       </td>
 
@@ -603,7 +506,14 @@ function App() {
                           onClick={(e) => {
                             saveArrayRow("experience", e);
                           }}
-                          className="bg-green-600 text-white px-4 py-2 rounded-md"
+                          // className="bg-green-600 text-white px-4 py-2 rounded-md"
+                          disabled={!isExperienceValid()}
+                          className={`px-4 py-2 rounded-md text-white
+                            ${
+                              !isExperienceValid()
+                                ? "bg-gray-400 cursor-not-allowed"
+                                : "bg-green-600"
+                            }`}
                         >
                           Save
                         </button>
@@ -677,16 +587,18 @@ function App() {
             {/* STEP 4 SKILLS */}
             {steps === 4 && (
               <div className="md:col-span-2">
-                <input
+                <InputField
                   name="skills"
                   value={skills}
                   onChange={(e) => setSkills(e.target.value)}
                   placeholder="Please state your skills"
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 mb-2"
                 />
                 <button
                   onClick={handleSave}
-                  className="bg-green-600 text-white px-4 py-2 rounded-md"
+                  // className="bg-green-600 text-white px-4 py-2 rounded-md"
+                  disabled={!skills.trim()}
+                  className={`px-4 py-2 rounded-md text-white
+                  ${!skills.trim() ? "bg-gray-400 cursor-not-allowed" : "bg-green-600"}`}
                 >
                   Save
                 </button>
@@ -711,7 +623,7 @@ function App() {
             )}
 
             {/* BUTTONS */}
-            <div className="md:col-span-2 flex justify-end gap-4 pt-4">
+            {/* <div className="md:col-span-2 flex justify-end gap-4 pt-4">
               {steps > 1 && (
                 <button
                   type="button"
@@ -725,6 +637,7 @@ function App() {
               {steps === totalSteps ? (
                 <button
                   type="button"
+                  onClick={handleSubmit}
                   className="text-white px-5 py-2.5 rounded-lg bg-green-600 hover:bg-green-700"
                 >
                   Submit
@@ -733,12 +646,27 @@ function App() {
                 <button
                   type="button"
                   onClick={handleNext}
-                  className="text-white px-5 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700"
+                  disabled={!isStepValid()}
+                  // className="text-white px-5 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700"
+                  className={`text-white px-5 py-2.5 rounded-lg
+                  ${
+                    !isStepValid()
+                      ? "bg-gray-400 cursor-not-allowed"
+                      : "bg-blue-600 hover:bg-blue-700"
+                  }`}
                 >
                   Next
                 </button>
               )}
-            </div>
+            </div> */}
+            <StepNavigation
+              step={steps}
+              totalSteps={totalSteps}
+              handleNext={handleNext}
+              handlePrev={handlePrev}
+              handleSubmit={handleSubmit}
+              isStepValid={isStepValid}
+            />
           </form>
         </div>
       </main>
