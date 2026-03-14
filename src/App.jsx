@@ -5,7 +5,6 @@ import {
   DocumentTextIcon,
   UserIcon,
 } from "@heroicons/react/20/solid";
-import { useState } from "react";
 import ProgressBar from "./components/layout/ProgressBar";
 import StepNavigation from "./components/layout/StepNavigation";
 import FormHead from "./components/layout/FormHead";
@@ -13,166 +12,26 @@ import PersonalInfo from "./components/form/PersonalInfo";
 import EducationForm from "./components/form/EducationForm";
 import ExperienceForm from "./components/form/ExperienceForm";
 import SkillForm from "./components/form/SkillForm";
+import { useResumeForm } from "./hook/useResumeForm";
 
 function App() {
-  const [resumeData, setResumeData] = useState({
-    personalInfo: {
-      fullName: "",
-      email: "",
-      phone: "",
-      location: "",
-      linkedin: "",
-      portfolio: "",
-    },
-    education: [],
-    experience: [],
-    skills: [],
-  });
-
-  const [educationData, setEducationData] = useState({
-    instituteName: "",
-    degreeName: "",
-    fieldOfStudy: "",
-    status: "",
-    startDate: "",
-    endDate: "",
-  });
-
-  const [experience, setExperience] = useState({
-    comapnyName: "",
-    role: "",
-    type: "",
-    status: "",
-    startDate: "",
-    location: "",
-    endDate: "",
-  });
-
-  const [skills, setSkills] = useState("");
-
-  const [steps, setSteps] = useState(1);
-  const totalSteps = 4;
-
-  // STEP CONTROL
-  const handleNext = () => {
-    if (steps < totalSteps) {
-      setSteps((prev) => prev + 1);
-    }
-  };
-
-  const handlePrev = () => {
-    if (steps > 1) {
-      setSteps((prev) => prev - 1);
-    }
-  };
-
-  //handler for handling inputs
-  const handleInputChange = (section) => (e) => {
-    const { name, value } = e.target;
-
-    setResumeData((prev) => ({
-      ...prev,
-      [section]: {
-        ...prev[section],
-        [name]: value,
-      },
-    }));
-  };
-
-  const handleArrayChange = (section, e) => {
-    const { name, value } = e.target;
-    if (section.toLowerCase() === "education") {
-      setEducationData((prev) => ({
-        ...prev,
-        [name]: value,
-      }));
-      // console.log(educationData);
-    }
-
-    if (section.toLowerCase() === "experience") {
-      setExperience((prev) => ({
-        ...prev,
-        [name]: value,
-      }));
-      // console.log(experience);
-    }
-  };
-
-  //save button
-  const saveArrayRow = (section, e) => {
-    e.preventDefault();
-    if (section === "education") {
-      setResumeData((prev) => ({
-        ...prev,
-        education: [...prev.education, { ...educationData, id: Date.now() }], // append new education
-      }));
-
-      setEducationData({
-        instituteName: "",
-        degreeName: "",
-        fieldOfStudy: "",
-        status: "",
-        startDate: "",
-        endDate: "",
-      });
-      console.log("education added successfully");
-    }
-
-    if (section === "experience") {
-      setResumeData((prev) => ({
-        ...prev,
-        experience: [...prev.experience, { ...experience, id: Date.now() }], // append new experience
-      }));
-
-      setExperience({
-        companyName: "", // fixed typo
-        role: "",
-        type: "",
-        status: "",
-        startDate: "",
-        location: "",
-        endDate: "",
-      });
-      console.log("experience added successfully");
-    }
-  };
-
-  const handleDeleteArray = (section, id) => {
-    if (section === "education") {
-      setResumeData((prev) => ({
-        ...prev,
-        education: prev.education.filter((edu) => edu.id !== id),
-      }));
-      console.log(" education data delete sucessfully");
-      return;
-    }
-    if (section === "experience") {
-      setResumeData((prev) => ({
-        ...prev,
-        experience: prev.experience.filter((item) => item.id !== id),
-      }));
-      console.log(" experience data delete sucessfully");
-      return;
-    }
-  };
-
-  const handleSave = (e) => {
-    e.preventDefault();
-    setResumeData((prev) => ({
-      ...prev,
-      skills: [...prev.skills, { id: Date.now(), skills }], // append new experience
-    }));
-    setSkills("");
-    console.log("data saved");
-  };
-
-  const handleDeleteSkill = (e, id) => {
-    e.preventDefault();
-    setResumeData((prev) => ({
-      ...prev,
-      skills: prev.skills.filter((skill) => skill.id !== id),
-    }));
-  };
+  const {
+    resumeData,
+    educationData,
+    experience,
+    skills,
+    setSkills,
+    step,
+    totalSteps,
+    handleNext,
+    handlePrev,
+    handleArrayChange,
+    handleDeleteArray,
+    handleDeleteSkill,
+    handleInputChange,
+    saveArrayRow,
+    handleSave,
+  } = useResumeForm();
 
   // validation
   const validatePersonalInfo = () => {
@@ -186,10 +45,10 @@ function App() {
   };
 
   const isStepValid = () => {
-    if (steps === 1) return validatePersonalInfo();
-    if (steps === 2) return resumeData.education.length > 0;
-    if (steps === 3) return resumeData.experience.length > 0;
-    if (steps === 4) return resumeData.skills.length > 0;
+    if (step === 1) return validatePersonalInfo();
+    if (step === 2) return resumeData.education.length > 0;
+    if (step === 3) return resumeData.experience.length > 0;
+    if (step === 4) return resumeData.skills.length > 0;
     return true;
   };
 
@@ -208,7 +67,7 @@ function App() {
     4: { title: "Skills (Technical & Soft)", Icon: CommandLineIcon },
   };
 
-  const currentStep = stepConfig[steps];
+  const currentStep = stepConfig[step];
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -222,7 +81,7 @@ function App() {
             </h2>
           </div>
           {/* PROGRESS BAR */}
-          <ProgressBar step={steps} totalSteps={totalSteps} />
+          <ProgressBar step={step} totalSteps={totalSteps} />
 
           {/* =========== Dynamic Step Heading ============= */}
 
@@ -230,7 +89,7 @@ function App() {
 
           <form className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* STEP 1 */}
-            {steps === 1 && (
+            {step === 1 && (
               <PersonalInfo
                 resumeData={resumeData}
                 handleInputChange={handleInputChange}
@@ -238,7 +97,7 @@ function App() {
             )}
 
             {/* STEP 2 EDUCATION */}
-            {steps === 2 && (
+            {step === 2 && (
               <EducationForm
                 educationData={educationData}
                 handleArrayChange={handleArrayChange}
@@ -248,7 +107,7 @@ function App() {
               />
             )}
 
-            {steps === 3 && (
+            {step === 3 && (
               <ExperienceForm
                 experience={experience}
                 handleArrayChange={handleArrayChange}
@@ -259,7 +118,7 @@ function App() {
             )}
 
             {/* STEP 4 SKILLS */}
-            {steps === 4 && (
+            {step === 4 && (
               <SkillForm
                 skills={skills}
                 setSkills={setSkills}
@@ -272,7 +131,7 @@ function App() {
             {/* BUTTONS */}
 
             <StepNavigation
-              step={steps}
+              step={step}
               totalSteps={totalSteps}
               handleNext={handleNext}
               handlePrev={handlePrev}
