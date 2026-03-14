@@ -1,3 +1,6 @@
+import InputField from "../common/InputField";
+import SaveButton from "../common/SaveButtton";
+
 const SkillForm = ({
   skills,
   setSkills,
